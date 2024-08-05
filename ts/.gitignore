@@ -1,0 +1,6 @@
+*wallet.json
+node_modules
+
+# Yarn Ignores
+yarn-error.log
+yarn.lock
