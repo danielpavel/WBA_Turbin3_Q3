@@ -1,0 +1,11 @@
+[package]
+name = "rust"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bs58 = "0.5.1"
+solana-client = "2.0.3"
+solana-sdk = "2.0.3"
+borsh = "0.10.3"
+solana-idlgen = { git = "https://github.com/deanmlittle/solana-idlgen.git" }
