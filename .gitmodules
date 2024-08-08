@@ -1,0 +1,3 @@
+[submodule "generug-blink"]
+	path = generug-blink
+	url = git@github.com:danielpavel/generug-blink.git
