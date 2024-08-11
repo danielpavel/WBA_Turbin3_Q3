@@ -18,6 +18,7 @@ import {
   SystemProgram,
   Keypair,
 } from "@solana/web3.js";
+import * as crypto from "crypto";
 
 export async function createAndMint(
   provider: Provider,
@@ -78,6 +79,10 @@ export async function createAndMint(
 
   await provider.sendAndConfirm(mintTx);
   console.log(`✅ Minted ${amount} tokens to ${ata.toBase58()}`);
+
+  return { mint, ata };
 }
 
-// export createAndMint;
+export function generateRandomHex(): string {
+  return crypto.randomBytes(32).toString("hex");
+}
