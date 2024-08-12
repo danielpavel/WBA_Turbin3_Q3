@@ -2,13 +2,10 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { AnchorVaultToken } from "../target/types/anchor_vault_token";
 
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { createAndMint, generateRandomU64Seed } from "./utils";
-import {
-  getAssociatedTokenAddressSync,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { createAndMint } from "./utils";
 import { expect } from "chai";
+import { make } from "./maker";
 
 const DECIMALS = 6;
 
@@ -45,46 +42,27 @@ describe("anchor_vault_token", async () => {
     );
 
     try {
-      const seed = generateRandomU64Seed();
-
-      const [escrow, escrowBump] = PublicKey.findProgramAddressSync(
-        [
-          anchor.utils.bytes.utf8.encode("escrow"),
-          user1.publicKey.toBuffer(),
-          seed.toArrayLike(Buffer, "le", 8),
-        ],
-        program.programId
-      );
-
-      let vault = getAssociatedTokenAddressSync(mintA.publicKey, escrow, true);
-
-      const accounts = {
-        maker: user1.publicKey,
-        mintA: mintA.publicKey,
-        mintB: mintB.publicKey,
-
-        makerAtaA: user1_Ata,
-        escrow,
-        vault,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      };
-
       const receive = new anchor.BN(5 * Math.pow(10, DECIMALS));
       const amount = new anchor.BN(10 * Math.pow(10, DECIMALS));
-      const tx = await program.methods
-        .make(new anchor.BN(seed), amount, receive)
-        .accounts(accounts)
-        .signers([user1])
-        .rpc();
 
-      const escrowAccount = await program.account.escrow.fetch(escrow);
+      const { escrow, vault } = await make(
+        user1,
+        mintA.publicKey,
+        mintB.publicKey,
+        user1_Ata,
+        receive,
+        amount,
+        program
+      );
+
+      const escrowAccount = await program.account.escrow.fetch(escrow.pubkey);
 
       // Check the escrow account
       expect(escrowAccount.maker).to.eql(user1.publicKey);
       expect(escrowAccount.mintA).to.eql(mintA.publicKey);
       expect(escrowAccount.mintB).to.eql(mintB.publicKey);
       expect(escrowAccount.receive.toNumber()).to.eql(receive.toNumber());
-      expect(escrowAccount.bump).to.eql(escrowBump);
+      expect(escrowAccount.bump).to.eql(escrow.bump);
 
       // Check User Token Balance has been deducted
       let user1Amount = await connection.getTokenAccountBalance(user1_Ata);
