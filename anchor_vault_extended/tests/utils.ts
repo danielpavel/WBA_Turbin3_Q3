@@ -1,4 +1,4 @@
-import { Provider } from "@coral-xyz/anchor";
+import { Provider, BN } from "@coral-xyz/anchor";
 import {
   createAssociatedTokenAccountInstruction,
   createInitializeMintInstruction,
@@ -23,9 +23,9 @@ import * as crypto from "crypto";
 export async function createAndMint(
   provider: Provider,
   amount: number,
-  user: PublicKey
+  user: PublicKey,
+  decimals: number = 6
 ) {
-  const decimals = 6;
   const payer = provider;
   const connection = provider.connection;
 
@@ -84,5 +84,11 @@ export async function createAndMint(
 }
 
 export function generateRandomHex(): string {
-  return crypto.randomBytes(32).toString("hex");
+  return crypto.randomBytes(8).toString("hex");
+}
+
+export function generateRandomU64Seed(): BN {
+  const randomBytes = Keypair.generate().secretKey.slice(0, 8);
+
+  return new BN(randomBytes);
 }
