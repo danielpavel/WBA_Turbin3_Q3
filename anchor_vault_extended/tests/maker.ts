@@ -18,8 +18,7 @@ export async function make(
   user1_Ata: PublicKey,
   receive: BN,
   amount: BN,
-  program: Program<AnchorVaultToken>,
-  decimals: number = 6
+  program: Program<AnchorVaultToken>
 ) {
   const seed = generateRandomU64Seed();
 
@@ -52,4 +51,30 @@ export async function make(
     .rpc();
 
   return { escrow: { pubkey: escrow, bump: escrowBump }, vault, tx };
+}
+
+export async function refund_and_close_vault(
+  maker: Keypair,
+  mintA: PublicKey,
+  user1_Ata: PublicKey,
+  program: Program<AnchorVaultToken>,
+  vault: PublicKey,
+  escrow: PublicKey
+) {
+  const accounts = {
+    maker: maker.publicKey,
+    mintA,
+    makerAtaA: user1_Ata,
+    escrow,
+    vault,
+    tokenProgram: TOKEN_PROGRAM_ID,
+  };
+
+  const tx = await program.methods
+    .refund()
+    .accounts(accounts)
+    .signers([maker])
+    .rpc();
+
+  return { tx };
 }

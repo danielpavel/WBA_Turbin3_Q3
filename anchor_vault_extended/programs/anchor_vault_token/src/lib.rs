@@ -23,7 +23,7 @@ pub mod anchor_vault_token {
         ctx.accounts.transfer_to_maker()?;
         ctx.accounts.withdraw_and_close()
     }
-    pub fn deposit(ctx: Context<Refund>) -> Result<()> {
+    pub fn refund(ctx: Context<Refund>) -> Result<()> {
         msg!("refund");
         ctx.accounts.withdraw_and_close()
     }
