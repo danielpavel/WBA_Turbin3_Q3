@@ -3,9 +3,10 @@ import { Program } from "@coral-xyz/anchor";
 import { AnchorVaultToken } from "../target/types/anchor_vault_token";
 
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { createAndMint } from "./utils";
 import { expect } from "chai";
 import { make, refund_and_close_vault } from "./maker";
+import { createAndMint } from "./utils";
+import { take } from "./taker";
 
 const DECIMALS = 6;
 
@@ -47,7 +48,7 @@ describe("anchor_vault_token", async () => {
     user2_Ata = user2_Ata_;
   });
 
-  it("maker", async () => {
+  it("make", async () => {
     try {
       const receive = new anchor.BN(5 * Math.pow(10, DECIMALS));
       const amount = new anchor.BN(10 * Math.pow(10, DECIMALS));
@@ -83,7 +84,7 @@ describe("anchor_vault_token", async () => {
     }
   });
 
-  it("maker and refund", async () => {
+  it("make and refund", async () => {
     try {
       const receive = new anchor.BN(5 * Math.pow(10, DECIMALS));
       const amount = new anchor.BN(10 * Math.pow(10, DECIMALS));
@@ -135,6 +136,43 @@ describe("anchor_vault_token", async () => {
       // Check Valut Token has been closed (aka null)
       const vaultAccount = await connection.getAccountInfo(vault);
       expect(vaultAccount).to.eql(null);
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  it("make and take", async () => {
+    try {
+      const receive = new anchor.BN(5 * Math.pow(10, DECIMALS));
+      const amount = new anchor.BN(10 * Math.pow(10, DECIMALS));
+
+      const { escrow, vault } = await make(
+        user1,
+        mintA.publicKey,
+        mintB.publicKey,
+        user1_Ata,
+        receive,
+        amount,
+        program
+      );
+
+      const { tx } = await take(
+        user2,
+        user1.publicKey,
+        mintA.publicKey,
+        mintB.publicKey,
+        escrow.pubkey,
+        vault,
+        program
+      );
+
+      // Check User Token Balance has been deducted
+      let user1Amount = await connection.getTokenAccountBalance(user1_Ata);
+      expect(user1Amount.value.uiAmount).to.eql(70);
+
+      // Check Valut Token Balance has been credited
+      let user2Amount = await connection.getTokenAccountBalance(user2_Ata);
+      expect(user2Amount.value.uiAmount).to.eql(95);
     } catch (err) {
       console.error(err);
     }

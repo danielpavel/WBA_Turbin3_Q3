@@ -35,15 +35,22 @@ pub struct Take<'info> {
         associated_token::authority = taker,
         associated_token::token_program = token_program,
     )]
-    taker_ata_a: InterfaceAccount<'info, TokenAccount>,
-
+    pub taker_ata_a: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         mut,
         associated_token::mint = mint_b,
         associated_token::authority = taker,
         associated_token::token_program = token_program,
     )]
-    maker_ata_b: InterfaceAccount<'info, TokenAccount>,
+    pub taker_ata_b: Box<InterfaceAccount<'info, TokenAccount>>,
+    #[account(
+        init_if_needed,
+        payer = taker,
+        associated_token::mint = mint_b,
+        associated_token::authority = maker,
+        associated_token::token_program = token_program,
+    )]
+    pub maker_ata_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -73,7 +80,7 @@ pub struct Take<'info> {
 impl<'info> Take<'info> {
     pub fn transfer_to_maker(&mut self) -> Result<()> {
         let accounts = TransferChecked {
-            from: self.taker_ata_a.to_account_info(),
+            from: self.taker_ata_b.to_account_info(),
             mint: self.mint_b.to_account_info(),
             to: self.maker_ata_b.to_account_info(),
             authority: self.taker.to_account_info(),
