@@ -17,7 +17,6 @@ export async function take(
   program: Program<AnchorVaultToken>
 ) {
   let makerAtaB = getAssociatedTokenAddressSync(mintB, maker);
-
   let takerAtaA = getAssociatedTokenAddressSync(mintA, taker.publicKey);
   let takerAtaB = getAssociatedTokenAddressSync(mintB, taker.publicKey);
 

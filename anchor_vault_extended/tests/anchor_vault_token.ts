@@ -53,7 +53,7 @@ describe("anchor_vault_token", async () => {
       const receive = new anchor.BN(5 * Math.pow(10, DECIMALS));
       const amount = new anchor.BN(10 * Math.pow(10, DECIMALS));
 
-      const { escrow, vault } = await make(
+      const { escrow, vault, tx } = await make(
         user1,
         mintA.publicKey,
         mintB.publicKey,
@@ -79,6 +79,8 @@ describe("anchor_vault_token", async () => {
       // Check Valut Token Balance has been credited
       let vaultAmount = await connection.getTokenAccountBalance(vault);
       expect(vaultAmount.value.uiAmount).to.eql(10);
+
+      console.log("🟢 Tx signature:", tx);
     } catch (err) {
       console.error(err);
     }
@@ -89,7 +91,11 @@ describe("anchor_vault_token", async () => {
       const receive = new anchor.BN(5 * Math.pow(10, DECIMALS));
       const amount = new anchor.BN(10 * Math.pow(10, DECIMALS));
 
-      const { escrow, vault } = await make(
+      const {
+        escrow,
+        vault,
+        tx: makeTx,
+      } = await make(
         user1,
         mintA.publicKey,
         mintB.publicKey,
@@ -98,6 +104,8 @@ describe("anchor_vault_token", async () => {
         amount,
         program
       );
+
+      console.log("🟢 Make tx signature:", makeTx);
 
       const escrowAccount = await program.account.escrow.fetch(escrow.pubkey);
 
@@ -120,7 +128,7 @@ describe("anchor_vault_token", async () => {
       expect(vaultAmount.value.uiAmount).to.eql(10);
 
       // Refund
-      await refund_and_close_vault(
+      const { tx: refundTx } = await refund_and_close_vault(
         user1,
         mintA,
         user1_Ata,
@@ -136,6 +144,8 @@ describe("anchor_vault_token", async () => {
       // Check Valut Token has been closed (aka null)
       const vaultAccount = await connection.getAccountInfo(vault);
       expect(vaultAccount).to.eql(null);
+
+      console.log("🟢 Refund tx signature:", refundTx);
     } catch (err) {
       console.error(err);
     }
@@ -146,7 +156,11 @@ describe("anchor_vault_token", async () => {
       const receive = new anchor.BN(5 * Math.pow(10, DECIMALS));
       const amount = new anchor.BN(10 * Math.pow(10, DECIMALS));
 
-      const { escrow, vault } = await make(
+      const {
+        escrow,
+        vault,
+        tx: makeTx,
+      } = await make(
         user1,
         mintA.publicKey,
         mintB.publicKey,
@@ -155,6 +169,15 @@ describe("anchor_vault_token", async () => {
         amount,
         program
       );
+
+      let user1Amount;
+      let user2Amount;
+
+      // Check User Token Balance has been deducted
+      user1Amount = await connection.getTokenAccountBalance(user1_Ata);
+      expect(user1Amount.value.uiAmount).to.eql(80);
+
+      console.log("🟢 Make tx signature:", makeTx);
 
       const { tx } = await take(
         user2,
@@ -166,13 +189,15 @@ describe("anchor_vault_token", async () => {
         program
       );
 
-      // Check User Token Balance has been deducted
-      let user1Amount = await connection.getTokenAccountBalance(user1_Ata);
-      expect(user1Amount.value.uiAmount).to.eql(70);
-
       // Check Valut Token Balance has been credited
-      let user2Amount = await connection.getTokenAccountBalance(user2_Ata);
+      user2Amount = await connection.getTokenAccountBalance(user2_Ata);
       expect(user2Amount.value.uiAmount).to.eql(95);
+
+      // Check Valut Token has been closed (aka null)
+      const vaultAccount = await connection.getAccountInfo(vault);
+      expect(vaultAccount).to.eql(null);
+
+      console.log("🟢 Take tx signature:", tx);
     } catch (err) {
       console.error(err);
     }
