@@ -10,7 +10,7 @@ This repo showcases [my](https://x.com/_danielpavel) work as a proud member of t
 There are several submodules as part of this repository so make sure you initialize the submodules after clonning:
 
 ```bash
-git submodule init git submodule update
+git submodule init && git submodule update
 ```
 
 or clone with submodules in one go:
