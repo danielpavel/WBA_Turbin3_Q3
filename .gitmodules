@@ -10,3 +10,6 @@
 [submodule "nft-marketplace"]
 	path = nft-marketplace
 	url = git@github.com:danielpavel/nft-marketplace.git
+[submodule "capstone"]
+	path = capstone
+	url = git@github.com:danielpavel/penny-auctions-marketplace.git
